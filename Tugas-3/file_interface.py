@@ -29,12 +29,10 @@ class FileInterface:
     def upload(self, params=[]):
         try:
             filename = params[0]
-            if filename =='':
-                return None
             filedata = params[1]
-            filedata = base64.b64decode(filedata)
+            decoded = base64.b64decode(filedata.encode())
             with open(filename, 'wb') as f:
-                f.write(filedata)
+                f.write(decoded)
             return dict(status='OK', data=f"{filename} uploaded")
         except Exception as e:
             return dict(status='ERROR', data=str(e))

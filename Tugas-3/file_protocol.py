@@ -16,15 +16,11 @@ pada akhirnya akan diproses dalam bentuk string
 string
 """
 
-
-
 class FileProtocol:
     def __init__(self):
         self.file = FileInterface()
     def proses_string(self,string_datamasuk=''):
-        logging.warning(f"string diproses: {string_datamasuk}")
-        # Perubahan pada split().lower() karena jika semua parameter diubah ke lowercase
-        # akan terjadi error pada saat upload file (datanya corrupt) 
+        # Tidak semua parameter dibuat lowercase
         c = shlex.split(string_datamasuk)
         try:
             c_request = c[0].strip().lower()

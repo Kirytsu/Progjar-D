@@ -12,12 +12,13 @@ def send_command(command_str=""):
     logging.warning(f"connecting to {server_address}")
     try:
         logging.warning(f"sending message ")
-        sock.sendall(command_str.encode())
+        command_data = command_str + "\r\n\r\n"
+        sock.sendall(command_data.encode())
         # Look for the response, waiting until socket is done (no more data)
         data_received="" #empty string
         while True:
             #socket does not receive all data at once, data comes in part, need to be concatenated at the end of process
-            data = sock.recv(16)
+            data = sock.recv(1024)
             if data:
                 #data is not empty, concat with previous content
                 data_received += data.decode()
@@ -68,28 +69,36 @@ def remote_upload(filename=""):
     try:
         with open(filename, 'rb') as f:
             filedata = base64.b64encode(f.read()).decode()
-        command_str = f"UPLOAD {filename} {filedata}"
-        hasil = send_command(command_str)
-        print(hasil.get("data", "No response"))
-        return hasil.get("status") == "OK"
+            command_str = f"UPLOAD {filename} {filedata}"
+            hasil = send_command(command_str)
+            if (hasil['status']=='OK'):
+                print(hasil['data'])
+                return True
+            else:
+                print("Gagal")
+                return False
     except Exception as e:
-        print(f"Upload failed: {e}")
-        return False
+        print(f"Error: {e}")
+        
 
 def remote_delete(filename=""):
     command_str = f"DELETE {filename}"
     hasil = send_command(command_str)
-    print(hasil.get("data", "No response"))
-    return hasil.get("status") == "OK"
-
+    if (hasil['status']=='OK'):
+        print(hasil['data'])
+        return True
+    else:
+        print("Gagal")
+        return False
 
 if __name__=='__main__':
     server_address=('172.16.16.101',50000)
     remote_list()
     remote_get('pokijan.jpg')
-    # remote_get('donalbebek.jpg')
-    # remote_delete('donalbebek.jpg')
-    # remote_list()
-    # remote_upload('donalbebek.jpg')
-    # remote_list()
-
+    remote_get('donalbebek.jpg')
+    remote_delete('donalbebek.jpg')
+    remote_delete('pokijan.jpg')
+    remote_list()
+    remote_upload('donalbebek.jpg')
+    # remote_upload('pokijan.jpg')
+    remote_list()

@@ -26,41 +26,40 @@ LIST
   - status: ERROR
   - data: pesan kesalahan
 
-GET
-* TUJUAN: untuk mendapatkan isi file dengan menyebutkan nama file dalam parameter
+UPLOAD
+* TUJUAN: untuk mengirimkan file dari client ke server dengan menyebutkan nama file dalam parameter
 * PARAMETER:
-  - PARAMETER : nama file
+  - PARAMETER1 : nama file
+  - PARAMETER2 : isi file dalam bentuk base64 (tidak perlu dispesifikan oleh user)
 * RESULT:
 - BERHASIL:
   - status: OK
-  - data_namafile : nama file yang diminta
-  - data_file : isi file yang diminta (dalam bentuk base64)
+  - data : {nama file} uploaded
 - GAGAL:
   - status: ERROR
   - data: pesan kesalahan
 
-UPLOAD
-* TUJUAN: mengirim sebuah file beserta isinya dengan menyebutkan nama file dalam parameter
+GET
+* TUJUAN: untuk mendapatkan file dengan menyebutkan nama file dalam parameter
 * PARAMETER:
   - PARAMETER1 : nama file
-  - PARAMETER2 : isi file dalam bentuk base64
 * RESULT:
 - BERHASIL:
   - status: OK
-  - data: pesan bahwa file berhasil diupload
+  - data_namafile : nama file yang diminta
+  - data_file : isi file yang diminta dalam bentuk base64
 - GAGAL:
   - status: ERROR
   - data: pesan kesalahan
 
 DELETE
-* TUJUAN: menghapus sebuah file beserta isinya dengan menyebutkan nama file dalam parameter
+* TUJUAN: untuk menghapus file dengan menyebutkan nama file dalam parameter
 * PARAMETER:
-  - PARAMETER : nama file
+  - PARAMETER1 : nama file
 * RESULT:
 - BERHASIL:
   - status: OK
-  - data: pesan bahwa file berhasil dihapus
+  - data  : {nama file} deleted
 - GAGAL:
   - status: ERROR
   - data: pesan kesalahan
-
