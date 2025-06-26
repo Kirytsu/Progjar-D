@@ -128,7 +128,7 @@ def upload_file(filepath, host='localhost'):
     return f"Upload status: HTTP {status_code}\nResponse body: {body}"
 
 def delete_file(filepath, host='localhost'):
-    response = send_command(f"DELETE /delete/{filepath}")
+    response = send_command(f"DELETE /delete/{filepath}{Header}")
     status_code, body = parse_http_response(response)
     return f"Delete status: HTTP {status_code}\nResponse body: {body}"
     
