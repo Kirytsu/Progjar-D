@@ -5,7 +5,7 @@ import sys
 import logging
 import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
-from game_http import HttpServer
+from game_server import HttpServer
 
 httpserver = HttpServer()
 
@@ -41,8 +41,6 @@ def ProcessTheClient(connection,address):
 				pass
 		connection.close()
 		return
-
-
 
 def Server():
 	the_clients = []

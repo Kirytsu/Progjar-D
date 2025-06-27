@@ -15,7 +15,7 @@ class HttpServer:
 		resp.append("HTTP/1.0 {} {}\r\n" . format(kode,message))
 		resp.append("Date: {}\r\n" . format(tanggal))
 		resp.append("Connection: close\r\n")
-		resp.append("Server: myserver/1.0\r\n")
+		resp.append("Server: gameserver/1.0\r\n")
 		resp.append("Content-Length: {}\r\n" . format(len(messagebody)))
 		for kk in headers:
 			resp.append("{}:{}\r\n" . format(kk,headers[kk]))
@@ -35,13 +35,10 @@ class HttpServer:
 		return response
 
 	def proses(self,data):
-		
 		requests = data.split("\r\n")
 		#print(requests)
-
 		baris = requests[0]
 		#print(baris)
-
 		all_headers = [n for n in requests[1:] if n!='']
 
 		j = baris.split(" ")
@@ -104,27 +101,3 @@ class HttpServer:
 				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
 		
 		return self.response(404,'Not Found','',{})
-
-def handle_client(client_socket, http_server):
-	try:
-		request = client_socket.recv(1024).decode()
-		response = http_server.proses(request)
-		client_socket.send(response)
-	except:
-		pass
-	finally:
-		client_socket.close()
-
-if __name__ == "__main__":
-	http_server = HttpServer()
-	server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	server_socket.bind(('localhost', 44444))
-	server_socket.listen(5)
-	
-	print("Game HTTP Server berjalan pada 44444")
-	
-	while True:
-		client_socket, address = server_socket.accept()
-		client_thread = threading.Thread(target=handle_client, args=(client_socket, http_server))
-		client_thread.start()
