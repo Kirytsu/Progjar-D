@@ -176,8 +176,10 @@ class OldMaidClient:
             text = "Press SPACE to start | ESC to quit" if len(self.players) >= 2 else "Waiting for players... | ESC to quit"
         elif self.status == "playing":
             text = "Click other players to draw | ESC to quit" if self.current_turn == self.player_id else "Waiting... | ESC to quit"
+        elif self.status == "finished":
+            text = "Game finished! Press SPACE to restart | ESC to quit"
         else:
-            text = "Game finished! | ESC to quit"
+            text = "ESC to quit"
         self.screen.blit(self.font.render(text, True, self.RED), (10, 650))
         
         pygame.display.flip()
@@ -188,8 +190,11 @@ class OldMaidClient:
                 if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                     self.client.leave_game()
                     pygame.quit(); sys.exit()
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and self.status == "waiting":
-                    self.client.start_game()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    if self.status == "waiting":
+                        self.client.start_game()
+                    elif self.status == "finished":
+                        self.client.restart_game()
                 elif event.type == pygame.MOUSEMOTION:
                     self.mouse_pos = event.pos
                 elif event.type == pygame.MOUSEBUTTONDOWN:

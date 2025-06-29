@@ -80,7 +80,7 @@ class HttpServer:
 			if (object_address == '/get_game_state'):
 				data = json.dumps({'status': 'OK', 'game_state': self.game_manager.game_state})
 				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
-			
+            
 			if (object_address == '/join_game'):
 				success, result = self.game_manager.join_game()
 				if success:
@@ -88,21 +88,28 @@ class HttpServer:
 				else:
 					data = json.dumps({'status': 'FAILED', 'message': result})
 				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
-			
+            
 			if (object_address == '/start_game'):
 				if self.game_manager.start_game():
 					data = json.dumps({'status': 'OK'})
 				else:
 					data = json.dumps({'status': 'FAILED'})
 				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
-			
+
+			if (object_address == '/restart_game'):
+				if self.game_manager.restart_game():
+					data = json.dumps({'status': 'OK'})
+				else:
+					data = json.dumps({'status': 'FAILED'})
+				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
+
 			if object_address.startswith('/draw_card/'):
 				parts = object_address.split('/')
 				if len(parts) >= 4:
 					player_id = parts[2]
 					from_player = parts[3]
 					card_index = int(parts[4]) if len(parts) >= 5 else None
-					
+
 					if self.game_manager.draw_card(player_id, from_player, card_index):
 						data = json.dumps({'status': 'OK'})
 					else:
@@ -110,7 +117,7 @@ class HttpServer:
 				else:
 					data = json.dumps({'status': 'FAILED'})
 				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
-			
+
 			if object_address.startswith('/leave_game/'):
 				parts = object_address.split('/')
 				if len(parts) >= 3:

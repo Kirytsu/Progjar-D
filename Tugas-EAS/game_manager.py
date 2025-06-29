@@ -162,3 +162,10 @@ class GameManager:
         reset_thread = threading.Thread(target=reset_after_delay)
         reset_thread.daemon = True
         reset_thread.start()
+
+    def restart_game(self):
+        """Manually restart the game (can be called when game is finished)"""
+        if self.game_state['status'] == 'finished':
+            self._reset_to_waiting()
+            return True
+        return False
