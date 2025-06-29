@@ -35,7 +35,7 @@ def ProcessTheClient(connection,address):
 						connection.sendall(hasil)
 						rcv=""
 						# connection.close()
-						return
+						# return
 				else:
 					break
 			except OSError as e:
