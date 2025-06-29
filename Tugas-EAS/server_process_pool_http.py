@@ -13,6 +13,7 @@ httpserver = HttpServer()
 #maka class ProcessTheClient dirubah dulu menjadi function, tanpda memodifikasi behaviour didalamnya
 
 def ProcessTheClient(connection,address):
+		socket.setdefaulttimeout(5)  
 		rcv=""
 		while True:
 			try:
@@ -38,8 +39,9 @@ def ProcessTheClient(connection,address):
 				else:
 					break
 			except OSError as e:
-				pass
-		# connection.close()
+				connection.close()
+				break
+		connection.close()
 		return
 
 def Server():

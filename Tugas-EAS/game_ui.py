@@ -128,7 +128,7 @@ class OldMaidClient:
         
         # Header
         y = 10
-        self.screen.blit(pygame.font.Font(None, 36).render("Simple Old Maid", True, self.WHITE), (10, y))
+        self.screen.blit(pygame.font.Font(None, 36).render("Old Maid", True, self.WHITE), (10, y))
         y += 40
         if self.player_id:
             self.screen.blit(self.font.render(f"You: {self.player_id}", True, self.WHITE), (10, y))

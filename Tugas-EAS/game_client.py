@@ -69,6 +69,10 @@ class ClientInterface:
     def leave_game(self):
         if self.player_id:
             self.send_command(f"/leave_game/{self.player_id}")
+        try:
+                self.sock.close()
+        except Exception as e:      
+            logging.warning(f"Error closing socket: {e}")
     
     def restart_game(self):
         """Request to restart the game"""

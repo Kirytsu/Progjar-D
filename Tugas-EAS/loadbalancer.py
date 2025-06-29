@@ -10,8 +10,8 @@ class BackendList:
     def __init__(self):
         self.servers = []
         self.servers.append(('127.0.0.1', 50001)) # Multithread server
-        self.servers.append(('127.0.0.1', 50002)) # Process Pool server
-        self.servers.append(('127.0.0.1', 50003)) # Thread Pool server
+        # self.servers.append(('127.0.0.1', 50002)) # Process Pool server
+        # self.servers.append(('127.0.0.1', 50003)) # Thread Pool server
         self.current = 0
         self.client_map = {}  # mapping client_ip -> backend
 

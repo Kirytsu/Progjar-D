@@ -16,6 +16,7 @@ class ProcessTheClient(threading.Thread):
 		self.address = address
 
 	def run(self):
+		self.connection.settimeout(5) 
 		rcv = ""
 		while True:
 			try:
@@ -39,10 +40,11 @@ class ProcessTheClient(threading.Thread):
 						# self.connection.close()
 						# return
 				else:
-					break
+					break	
 			except OSError as e:
-				pass
-		# self.connection.close()
+				self.connection.close()
+				break
+		self.connection.close()
 		return
 
 def Server():
