@@ -1,21 +1,30 @@
 import json
 import os
-import socket
-import threading
+import sys
+import uuid
+from datetime import datetime
+from glob import glob
 from datetime import datetime
 from game_manager import GameManager
 
 class HttpServer:
 	def __init__(self):
 		self.game_manager = GameManager()
+		# Not used for game server
+		self.sessions={}
+		self.types={}
+		self.types['.pdf']='application/pdf'
+		self.types['.jpg']='image/jpeg'
+		self.types['.txt']='text/plain'
+		self.types['.html']='text/html'
 	
 	def response(self,kode=404,message='Not Found',messagebody=bytes(),headers={}):
 		tanggal = datetime.now().strftime('%c')
 		resp=[]
-		resp.append("HTTP/1.0 {} {}\r\n" . format(kode,message))
+		resp.append("HTTP/1.1 {} {}\r\n" . format(kode,message))
 		resp.append("Date: {}\r\n" . format(tanggal))
-		resp.append("Connection: close\r\n")
-		resp.append("Server: gameserver/1.0\r\n")
+		resp.append("Connection: keep-alive\r\n")
+		resp.append("Server: gameserver/1.1\r\n")
 		resp.append("Content-Length: {}\r\n" . format(len(messagebody)))
 		for kk in headers:
 			resp.append("{}:{}\r\n" . format(kk,headers[kk]))
@@ -53,6 +62,20 @@ class HttpServer:
 			return self.response(400,'Bad Request','',{})
 
 	def http_get(self,object_address,headers):
+		files = glob('./*')
+		#print(files)
+		thedir='./'
+  
+		# Not used for game server
+		if (object_address == '/'):
+			return self.response(200,'OK','Ini Adalah web Server percobaan',dict())
+		if (object_address == '/video'):
+			return self.response(302,'Found','',dict(location='https://youtu.be/katoxpnTf04'))
+		if (object_address == '/santai'):
+			return self.response(200,'OK','santai saja',dict())
+		# Not used for game server
+  
+		# Handle client HTTP requests
 		with self.game_manager.lock:
 			if (object_address == '/get_game_state'):
 				data = json.dumps({'status': 'OK', 'game_state': self.game_manager.game_state})
@@ -99,5 +122,26 @@ class HttpServer:
 				else:
 					data = json.dumps({'status': 'FAILED'})
 				return self.response(200,'OK',data,{'Content-Type': 'application/json'})
+				# Request to game server
 		
-		return self.response(404,'Not Found','',{})
+  
+		object_address=object_address[1:]
+		if thedir+object_address not in files:
+			return self.response(404,'Not Found','',{})
+		fp = open(thedir+object_address,'rb') #rb => artinya adalah read dalam bentuk binary
+		#harus membaca dalam bentuk byte dan BINARY
+		isi = fp.read()
+		
+		fext = os.path.splitext(thedir+object_address)[1]
+		content_type = self.types[fext]
+		
+		headers={}
+		headers['Content-type']=content_type
+		
+		return self.response(200,'OK',isi,headers)
+	
+ # Not used for game server
+	def http_post(self,object_address,headers):
+			headers ={}
+			isi = "kosong"
+			return self.response(200,'OK',isi,headers)

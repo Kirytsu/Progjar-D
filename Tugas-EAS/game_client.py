@@ -8,27 +8,27 @@ class ClientInterface:
     def __init__(self, host='localhost', port=44444):
         self.server_address = (host, port)
         self.player_id = None
+        # Creating TCP Socket 
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect(self.server_address)
     
     def send_command(self,command_str=""):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(2)
-        sock.connect(self.server_address)
         # Format HTTP request 
         request = (
-            f"GET {command_str} HTTP/1.0\r\n"
+            f"GET {command_str} HTTP/1.1\r\n"
             f"Host: {self.server_address[0]}\r\n"
-            f"Connection: close\r\n"
-            f"User-Agent: gameclient/1.0\r\n"
+            f"Connection: keep-alive\r\n"
+            f"User-Agent: gameclient/1.1\r\n"
             f"\r\n"
         )
         # logging.warning(f"connecting to {self.server_address}")
         try:
-            sock.sendall(request.encode())
+            self.sock.sendall(request.encode())
             # Look for the response, waiting until socket is done (no more data)
             data_received = "" #empty string
             while True:
                 #socket does not receive all data at once, data comes in part, need to be concatenated at the end of process
-                data = sock.recv(1024)
+                data = self.sock.recv(1024)
                 if data:
                     #data is not empty, concat with previous content
                     data_received += data.decode()

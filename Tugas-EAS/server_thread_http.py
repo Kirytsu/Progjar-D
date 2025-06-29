@@ -16,32 +16,53 @@ class ProcessTheClient(threading.Thread):
 		self.address = address
 
 	def run(self):
-		rcv = ""
+		# HTTP keep-alive: handle multiple requests per connection
+		buffer = b""
+		self.connection.settimeout(10)
 		while True:
 			try:
-				data = self.connection.recv(32)
-				if data:
-					# merubah input dari socket (berupa bytes) ke dalam string
-					# agar bisa mendeteksi \r\n
-					d = data.decode()
-					rcv = rcv + d
-					if rcv[-2:] == '\r\n':
-						# end of command, proses string
-						# logging.warning("data dari client: {}" . format(rcv))
-						hasil = httpserver.proses(rcv)
-						# hasil akan berupa bytes
-						# untuk bisa ditambahi dengan string, maka string harus di encode
-						hasil = hasil + "\r\n\r\n".encode()
-						# logging.warning("balas ke  client: {}" . format(hasil))
-						# hasil sudah dalam bentuk bytes
-						self.connection.sendall(hasil)
-						rcv = ""
+				data = self.connection.recv(4096)
+				if not data:
+					break
+				buffer += data
+				while True:
+					# Look for end of headers
+					header_end = buffer.find(b"\r\n\r\n")
+					if header_end == -1:
+						break  # Not enough data for headers
+					headers = buffer[:header_end].decode(errors="replace").split("\r\n")
+					# Parse Content-Length
+					content_length = 0
+					for h in headers:
+						if h.lower().startswith("content-length:"):
+							try:
+								content_length = int(h.split(":", 1)[1].strip())
+							except:
+								content_length = 0
+					total_len = header_end + 4 + content_length
+					if len(buffer) < total_len:
+						break  # Wait for full body
+					request_data = buffer[:header_end + 4 + content_length]
+					# Process request (ignore body for GET)
+					request_str = request_data[:header_end + 4].decode(errors="replace")
+					hasil = httpserver.proses(request_str)
+					# Send response (already includes headers and body)
+					self.connection.sendall(hasil)
+					# Remove processed request from buffer
+					buffer = buffer[total_len:]
+					# Check Connection header to see if we should close
+					close_conn = False
+					for h in headers:
+						if h.lower().startswith("connection:") and "close" in h.lower():
+							close_conn = True
+					if close_conn:
 						self.connection.close()
 						return
-				else:
-					break
-			except OSError as e:
-				pass
+			except socket.timeout:
+				break
+			except Exception as e:
+				# logging.warning(f"Exception: {e}")
+				break
 		self.connection.close()
 		return
 

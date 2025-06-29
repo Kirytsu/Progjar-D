@@ -3,11 +3,11 @@ import sys
 import os
 from game_client import ClientInterface 
 
-class SimpleOldMaidClient:
+class OldMaidClient:
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode((1000, 700))
-        pygame.display.set_caption("Simple Old Maid")
+        pygame.display.set_caption("Old Maid")
         self.clock = pygame.time.Clock()
         self.font = pygame.font.Font(None, 24)
         
@@ -210,4 +210,4 @@ class SimpleOldMaidClient:
             self.clock.tick(24)
 
 if __name__ == "__main__":
-    SimpleOldMaidClient().run()
+    OldMaidClient().run()

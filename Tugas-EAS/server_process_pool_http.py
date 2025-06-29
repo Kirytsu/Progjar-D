@@ -33,13 +33,13 @@ def ProcessTheClient(connection,address):
 						#hasil sudah dalam bentuk bytes
 						connection.sendall(hasil)
 						rcv=""
-						connection.close()
-						return
+						# connection.close()
+						# return
 				else:
 					break
 			except OSError as e:
 				pass
-		connection.close()
+		# connection.close()
 		return
 
 def Server():

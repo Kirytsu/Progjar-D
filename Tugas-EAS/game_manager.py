@@ -53,7 +53,7 @@ class GameManager:
         for player in self.game_state['players']:
             self.game_state['cards'][player] = []
             
-        # Deal only to active players
+        # Check players hand, then remove pairs
         for player in active_players:
             self.game_state['cards'][player] = remove_pairs(hands[player])
         
@@ -75,6 +75,7 @@ class GameManager:
             card = random.choice(self.game_state['cards'][from_player])
         self.game_state['cards'][from_player].remove(card)
         self.game_state['cards'][player_id].append(card)
+        
         # Randomize the player's hand after drawing
         random.shuffle(self.game_state['cards'][player_id])
         self.game_state['cards'][player_id] = remove_pairs(self.game_state['cards'][player_id])
@@ -84,10 +85,10 @@ class GameManager:
         
         # Check win
         if self._check_game_end():
-            self.game_state['status'] = 'finished'  # Set to finished first
+            self.game_state['status'] = 'finished'  
             self.game_state['current_turn'] = None
-            # Schedule reset after delay to show results
-            self._schedule_reset(5)  # 5 second delay
+            # Showing game results for 5 secs, before reset
+            self._schedule_reset(5)  
         
         return True
 
