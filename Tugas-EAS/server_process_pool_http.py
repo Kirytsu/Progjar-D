@@ -7,63 +7,67 @@ import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from game_server import HttpServer
 
-httpserver = HttpServer()
+# Create shared state manager at module level
+def create_shared_state():
+    manager = multiprocessing.Manager()
+    return manager.dict({
+        'players': manager.list(),
+        'cards': manager.dict(),
+        'current_turn': None,
+        'status': 'waiting',
+        'events': manager.list(),
+        'deck_initialized': False
+    })
 
-#untuk menggunakan processpoolexecutor, karena tidak mendukung subclassing pada process,
-#maka class ProcessTheClient dirubah dulu menjadi function, tanpda memodifikasi behaviour didalamnya
-
-def ProcessTheClient(connection,address):
-		socket.setdefaulttimeout(5)  
-		rcv=""
-		while True:
-			try:
-				data = connection.recv(32)
-				if data:
-					#merubah input dari socket (berupa bytes) ke dalam string
-					#agar bisa mendeteksi \r\n
-					d = data.decode()
-					rcv=rcv+d
-					if rcv[-2:]=='\r\n':
-						#end of command, proses string
-						#logging.warning("data dari client: {}" . format(rcv))
-						hasil = httpserver.proses(rcv)
-						#hasil akan berupa bytes
-						#untuk bisa ditambahi dengan string, maka string harus di encode
-						hasil=hasil+"\r\n\r\n".encode()
-						#logging.warning("balas ke  client: {}" . format(hasil))
-						#hasil sudah dalam bentuk bytes
-						connection.sendall(hasil)
-						rcv=""
-						# connection.close()
-						# return
-				else:
-					break
-			except OSError as e:
-				connection.close()
-				break
-		connection.close()
-		return
+# Pass shared_state as parameter to worker function
+def ProcessTheClient(connection, address, shared_state):
+    # Create HttpServer with shared state for this process
+    httpserver = HttpServer(shared_state=shared_state)
+    
+    socket.setdefaulttimeout(5)  
+    rcv = ""
+    while True:
+        try:
+            data = connection.recv(32)
+            if data:
+                d = data.decode()
+                rcv = rcv + d
+                if rcv[-2:] == '\r\n':
+                    hasil = httpserver.proses(rcv)
+                    hasil = hasil + "\r\n\r\n".encode()
+                    connection.sendall(hasil)
+                    rcv = ""
+            else:
+                break
+        except OSError as e:
+            connection.close()
+            break
+    connection.close()
+    return
 
 def Server():
-	the_clients = []
-	my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    the_clients = []
+    my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-	my_socket.bind(('0.0.0.0', 50002))
-	my_socket.listen(1)
-	print("Server berjalan dengan process pool di port 50002")
-	with ProcessPoolExecutor(20) as executor:
-		while True:
-				connection, client_address = my_socket.accept()
-				#logging.warning("connection from {}".format(client_address))
-				p = executor.submit(ProcessTheClient, connection, client_address)
-				the_clients.append(p)
-				#menampilkan jumlah process yang sedang aktif
-				jumlah = ['x' for i in the_clients if i.running()==True]
-				print(jumlah)
+    my_socket.bind(('0.0.0.0', 50002))
+    my_socket.listen(1)
+    print("Server berjalan dengan process pool di port 50002")
+    
+    # Create shared state once for all processes
+    shared_state = create_shared_state()
+    
+    with ProcessPoolExecutor(20) as executor:
+        while True:
+            connection, client_address = my_socket.accept()
+            # Pass shared_state to each worker process
+            p = executor.submit(ProcessTheClient, connection, client_address, shared_state)
+            the_clients.append(p)
+            jumlah = ['x' for i in the_clients if i.running() == True]
+            print(f"Active processes: {len(jumlah)}")
 
 def main():
-	Server()
+    Server()
 
-if __name__=="__main__":
-	main()
+if __name__ == "__main__":
+    main()
