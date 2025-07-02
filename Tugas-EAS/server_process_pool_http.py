@@ -24,7 +24,7 @@ def ProcessTheClient(connection, address, shared_state):
     # Create HttpServer with shared state for this process
     httpserver = HttpServer(shared_state=shared_state)
     
-    socket.setdefaulttimeout(5)  
+    connection.settimeout(5)  # Set timeout for this connection only
     rcv = ""
     while True:
         try:
@@ -39,8 +39,9 @@ def ProcessTheClient(connection, address, shared_state):
                     rcv = ""
             else:
                 break
+        except socket.timeout:
+            break
         except OSError as e:
-            connection.close()
             break
     connection.close()
     return
@@ -64,7 +65,7 @@ def Server():
             p = executor.submit(ProcessTheClient, connection, client_address, shared_state)
             the_clients.append(p)
             jumlah = ['x' for i in the_clients if i.running() == True]
-            print(f"Active processes: {len(jumlah)}")
+            print(jumlah)
 
 def main():
     Server()
